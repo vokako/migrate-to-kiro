@@ -1,4 +1,4 @@
-//! `to-kiro`: find what other AI coding assistants left on this machine and
+//! `migrate-to-kiro`: find what other AI coding assistants left on this machine and
 //! import it into Kiro.
 
 use anyhow::{anyhow, Result};
@@ -6,8 +6,8 @@ use clap::Parser;
 use console::{style, Term};
 use dialoguer::Confirm;
 use std::path::PathBuf;
-use to_kiro::model::Finding;
-use to_kiro::{apply, build, scan, Action, Ctx, Kind, Severity, Tool};
+use migrate_to_kiro::model::Finding;
+use migrate_to_kiro::{apply, build, scan, Action, Ctx, Kind, Severity, Tool};
 
 /// Import Cursor, GitHub Copilot, Qoder, CodeBuddy and Claude Code rules, MCP
 /// servers and skills into Kiro.
@@ -15,7 +15,7 @@ use to_kiro::{apply, build, scan, Action, Ctx, Kind, Severity, Tool};
 /// Run it with no arguments in a project folder: it looks for everything these
 /// tools left behind, shows what would be imported, and asks once.
 #[derive(Parser)]
-#[command(name = "to-kiro", version)]
+#[command(name = "migrate-to-kiro", version)]
 struct Cli {
     /// Tools to read: cursor, copilot, qoder, codebuddy, claude, or all
     #[arg(default_value = "all")]
@@ -45,7 +45,7 @@ struct Cli {
     #[arg(short = 'n', long)]
     dry_run: bool,
 
-    /// Overwrite files that were edited since import or not created by to-kiro (a backup is kept)
+    /// Overwrite files that were edited since import or not created by migrate-to-kiro (a backup is kept)
     #[arg(long)]
     force: bool,
 
@@ -86,7 +86,7 @@ fn run() -> Result<()> {
     let plan = build(scan(&tools, &kinds, &ctx), &ctx);
 
     let names: Vec<&str> = tools.iter().map(|t| t.slug()).collect();
-    println!("{} {}", style("to-kiro").bold(), style(names.join(", ")).dim());
+    println!("{} {}", style("migrate-to-kiro").bold(), style(names.join(", ")).dim());
     match &ctx.project {
         Some(p) => println!("{}", style(format!("project  {}", p.display())).dim()),
         None => println!("{}", style("project  none").dim()),
@@ -146,7 +146,7 @@ fn run() -> Result<()> {
     Ok(())
 }
 
-fn print_changes(plan: &to_kiro::Plan, ctx: &Ctx, verbose: bool) {
+fn print_changes(plan: &migrate_to_kiro::Plan, ctx: &Ctx, verbose: bool) {
     for kind in Kind::ALL {
         let items: Vec<_> = plan.changes.iter().filter(|c| c.kind == kind).collect();
         if items.is_empty() {

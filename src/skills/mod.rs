@@ -11,7 +11,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
-pub const MARKER_FILE: &str = ".to-kiro.json";
+pub const MARKER_FILE: &str = ".migrate-to-kiro.json";
 const MAX_FILES: usize = 500;
 const MAX_BYTES: u64 = 20 * 1024 * 1024;
 const MAX_SCAN_BYTES: u64 = 512 * 1024;

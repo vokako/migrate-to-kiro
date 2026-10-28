@@ -1,12 +1,12 @@
-# to-kiro
+# migrate-to-kiro
 
 Import what other AI coding assistants left on your machine into [Kiro](https://kiro.dev): rules and memory, MCP servers, and skills.
 
 ```
 cd your-project
-to-kiro            # scan, show the plan, ask once
-to-kiro --yes      # no question
-to-kiro -n         # plan only
+migrate-to-kiro            # scan, show the plan, ask once
+migrate-to-kiro --yes      # no question
+migrate-to-kiro -n         # plan only
 ```
 
 It reads Cursor, GitHub Copilot, Qoder, CodeBuddy and Claude Code. Nothing is written until you confirm. Outside a terminal it only prints the plan unless you pass `--yes`.
@@ -39,8 +39,8 @@ Cursor User Rules and Memories live in Cursor's settings, and Copilot personal a
 
 ## Safety
 
-- Files written by `to-kiro` carry a content hash. They are updated only while unmodified; your edits are never overwritten.
-- Anything else that already exists is a conflict and is left alone. `--force` overwrites it and keeps a backup (`*.md.bak`, `mcp.json.bak`, `~/.kiro/to-kiro-backup/`).
+- Files written by `migrate-to-kiro` carry a content hash. They are updated only while unmodified; your edits are never overwritten.
+- Anything else that already exists is a conflict and is left alone. `--force` overwrites it and keeps a backup (`*.md.bak`, `mcp.json.bak`, `~/.kiro/migrate-to-kiro-backup/`).
 - Your existing `mcp.json` entries and unrelated keys are preserved. An `mcp.json` that is not valid JSON is never touched.
 - A rule or skill that looks like it contains a credential is not imported; the report shows the file and line, never the value.
 - Personal notes (`*.local.md`, Claude auto memory) are added to `.git/info/exclude` so they are not committed.
@@ -51,7 +51,7 @@ Entries that cannot be converted exactly (tool allow-lists, `${input:...}` promp
 ## Options
 
 ```
-to-kiro [TOOLS] [--only steering,mcp,skills] [--project DIR] [--no-project] [--no-user]
+migrate-to-kiro [TOOLS] [--only steering,mcp,skills] [--project DIR] [--no-project] [--no-user]
         [-y|--yes] [-n|--dry-run] [--force] [-v|--verbose]
 ```
 
@@ -61,12 +61,12 @@ to-kiro [TOOLS] [--only steering,mcp,skills] [--project DIR] [--no-project] [--n
 
 ```
 python3 tests/mkfixture.py /tmp/sandbox
-cd /tmp/sandbox/proj && HOME=/tmp/sandbox/home to-kiro
+cd /tmp/sandbox/proj && HOME=/tmp/sandbox/home migrate-to-kiro
 ```
 
 ## Build
 
 ```
-cargo build --release     # target/release/to-kiro
+cargo build --release     # target/release/migrate-to-kiro
 cargo test
 ```

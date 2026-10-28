@@ -20,7 +20,7 @@ use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
 const EXCLUDE_PATTERN: &str = ".kiro/steering/imported-*-local-*.md";
-const MCP_SIDECAR: &str = ".to-kiro-mcp.json";
+const MCP_SIDECAR: &str = ".migrate-to-kiro-mcp.json";
 
 /// Reading order. `.mcp.json` and `.claude/skills` are shared, so the tool that
 /// created the convention goes first and gets the credit.
@@ -173,7 +173,7 @@ fn plan_rule(rule: Rule, ctx: &Ctx, plan: &mut Plan) {
         Ok(existing) => match render::is_untouched(&existing) {
             Some(true) => Action::Update,
             Some(false) => Action::Conflict("edited after it was imported".into()),
-            None => Action::Conflict("exists and was not created by to-kiro".into()),
+            None => Action::Conflict("exists and was not created by migrate-to-kiro".into()),
         },
     };
     plan.changes.push(Change {
@@ -283,7 +283,7 @@ fn plan_skill(skill: Skill, ctx: &Ctx, plan: &mut Plan) {
     } else {
         let marker = fs::read_to_string(dir.join(MARKER_FILE)).ok().and_then(|t| serde_json::from_str::<Value>(&t).ok());
         match marker.as_ref().and_then(|m| m.get("hash")).and_then(Value::as_str).map(str::to_string) {
-            None => Action::Conflict("exists and was not created by to-kiro".into()),
+            None => Action::Conflict("exists and was not created by migrate-to-kiro".into()),
             Some(recorded) => match skills::dir_hash(&dir) {
                 Err(e) => Action::Conflict(format!("cannot read existing skill: {e}")),
                 Ok(now) if format!("{now:016x}") != recorded => Action::Conflict("edited after it was imported".into()),
@@ -311,7 +311,7 @@ fn write_atomic(path: &Path, content: &str) -> Result<()> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).with_context(|| format!("create {}", parent.display()))?;
     }
-    let tmp = path.with_extension("to-kiro-tmp");
+    let tmp = path.with_extension("migrate-to-kiro-tmp");
     fs::write(&tmp, content).with_context(|| format!("write {}", tmp.display()))?;
     fs::rename(&tmp, path).with_context(|| format!("replace {}", path.display()))?;
     Ok(())
@@ -406,7 +406,7 @@ pub fn apply(plan: &Plan, force: bool) -> Result<ApplyReport> {
 /// half a skill behind. Returns the backup location when an existing skill was replaced.
 fn install_skill(dir: &Path, skill: &Skill, forced: bool) -> Result<Option<PathBuf>> {
     let kiro = dir.parent().and_then(Path::parent).ok_or_else(|| anyhow!("bad skill path {}", dir.display()))?;
-    let tmp_root = kiro.join("to-kiro-tmp");
+    let tmp_root = kiro.join("migrate-to-kiro-tmp");
     let tmp = tmp_root.join(&skill.name);
     if tmp.exists() {
         fs::remove_dir_all(&tmp)?;
@@ -427,7 +427,7 @@ fn install_skill(dir: &Path, skill: &Skill, forced: bool) -> Result<Option<PathB
     let mut backup = None;
     if dir.exists() {
         if forced {
-            let dest = kiro.join("to-kiro-backup").join("skills").join(&skill.name);
+            let dest = kiro.join("migrate-to-kiro-backup").join("skills").join(&skill.name);
             if dest.exists() {
                 fs::remove_dir_all(&dest)?;
             }

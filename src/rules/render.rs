@@ -9,7 +9,7 @@ use super::{Inclusion, Rule};
 use crate::model::Level;
 use crate::text::fnv1a;
 
-pub const MARKER: &str = "<!-- to-kiro:imported ";
+pub const MARKER: &str = "<!-- migrate-to-kiro:imported ";
 
 fn yaml_str(s: &str) -> String {
     // A JSON string is a valid YAML double-quoted scalar.
@@ -96,7 +96,7 @@ mod tests {
 
     #[test]
     fn front_matter_modes() {
-        assert!(render(&rule(Inclusion::Always)).starts_with("---\ninclusion: always\n---\n<!-- to-kiro:imported "));
+        assert!(render(&rule(Inclusion::Always)).starts_with("---\ninclusion: always\n---\n<!-- migrate-to-kiro:imported "));
         let fm = render(&rule(Inclusion::FileMatch(vec!["**/*.ts".into(), "a/{b,c}".into()])));
         assert!(fm.contains("fileMatchPattern: [\"**/*.ts\", \"a/{b,c}\"]\n"), "{fm}");
         let one = render(&rule(Inclusion::FileMatch(vec!["*.md".into()])));

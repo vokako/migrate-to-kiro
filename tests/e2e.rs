@@ -4,7 +4,7 @@
 use serde_json::{json, Value};
 use std::fs;
 use std::path::{Path, PathBuf};
-use to_kiro::{apply, build, scan, Action, Ctx, Kind, Severity, Tool};
+use migrate_to_kiro::{apply, build, scan, Action, Ctx, Kind, Severity, Tool};
 
 fn put(root: &Path, rel: &str, text: &str) {
     let p = root.join(rel);
@@ -28,7 +28,7 @@ impl Machine {
         Ctx::new(self.home.clone(), Some(self.proj.clone()), true)
     }
 
-    fn plan(&self) -> to_kiro::Plan {
+    fn plan(&self) -> migrate_to_kiro::Plan {
         let ctx = self.ctx();
         build(scan(&Tool::ALL, &Kind::ALL, &ctx), &ctx)
     }
@@ -109,7 +109,7 @@ fn machine() -> Machine {
     Machine { _h: h, _p: p, home, proj }
 }
 
-fn find<'a>(plan: &'a to_kiro::Plan, kind: Kind, name: &str) -> &'a to_kiro::plan::Change {
+fn find<'a>(plan: &'a migrate_to_kiro::Plan, kind: Kind, name: &str) -> &'a migrate_to_kiro::plan::Change {
     plan.changes
         .iter()
         .find(|c| c.kind == kind && c.name == name)
@@ -148,7 +148,7 @@ fn full_run_is_idempotent_and_protects_edits() {
 
     // ── targets ──
     let local = find(&plan, Kind::Mcp, "local-srv");
-    assert_eq!(local.level, to_kiro::Level::User);
+    assert_eq!(local.level, migrate_to_kiro::Level::User);
     assert!(local.target.starts_with("~/.kiro/settings/mcp.json"), "{}", local.target);
     assert!(find(&plan, Kind::Mcp, "github").target.starts_with(".kiro/settings/mcp.json"));
     assert!(plan.changes.iter().all(|c| c.action == Action::Create));
@@ -172,7 +172,7 @@ fn full_run_is_idempotent_and_protects_edits() {
     assert!(user_servers.contains_key("user-srv") && user_servers.contains_key("local-srv") && user_servers.contains_key("cb"));
 
     let skill_dir = m.proj.join(".kiro/skills/pdf");
-    assert!(skill_dir.join("SKILL.md").is_file() && skill_dir.join(".to-kiro.json").is_file());
+    assert!(skill_dir.join("SKILL.md").is_file() && skill_dir.join(".migrate-to-kiro.json").is_file());
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
@@ -236,10 +236,10 @@ fn full_run_is_idempotent_and_protects_edits() {
     // `.mcp.json` no longer defines `docs` (rewritten above), so Cursor's definition is the source now.
     assert_eq!(read_json(&m.proj.join(".kiro/settings/mcp.json"))["mcpServers"]["docs"]["url"], "https://other.example.com/mcp");
     assert!(!m.home.join(".kiro/skills/review/notes.txt").exists());
-    assert!(m.home.join(".kiro/to-kiro-backup/skills/review/notes.txt").is_file());
+    assert!(m.home.join(".kiro/migrate-to-kiro-backup/skills/review/notes.txt").is_file());
     assert!(fs::read_to_string(react.with_extension("md.bak")).unwrap().contains("my addition"));
     // No stray temp folders next to the skills.
-    assert!(!m.proj.join(".kiro/to-kiro-tmp").exists());
+    assert!(!m.proj.join(".kiro/migrate-to-kiro-tmp").exists());
 }
 
 #[test]
@@ -270,7 +270,7 @@ fn without_user_nothing_under_home_is_read_or_written() {
     let m = machine();
     let ctx = Ctx::new(m.home.clone(), Some(m.proj.clone()), false);
     let plan = build(scan(&Tool::ALL, &Kind::ALL, &ctx), &ctx);
-    assert!(plan.changes.iter().all(|c| c.level != to_kiro::Level::User), "{:?}", plan.changes.iter().map(|c| &c.target).collect::<Vec<_>>());
+    assert!(plan.changes.iter().all(|c| c.level != migrate_to_kiro::Level::User), "{:?}", plan.changes.iter().map(|c| &c.target).collect::<Vec<_>>());
     let before = read_json(&m.home.join(".kiro/settings/mcp.json"));
     apply(&plan, false).unwrap();
     assert_eq!(read_json(&m.home.join(".kiro/settings/mcp.json")), before);

@@ -1,16 +1,16 @@
 [package]
-name = "to-kiro"
+name = "migrate-to-kiro"
 version = "0.1.0"
 edition = "2021"
 description = "Import the rules, MCP servers and skills of other AI coding assistants into Kiro with one command"
 license = "MIT"
 
 [lib]
-name = "to_kiro"
+name = "migrate_to_kiro"
 path = "src/lib.rs"
 
 [[bin]]
-name = "to-kiro"
+name = "migrate-to-kiro"
 path = "src/main.rs"
 
 [dependencies]
